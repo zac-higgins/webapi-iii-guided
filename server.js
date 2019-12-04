@@ -23,10 +23,19 @@ function gateKeeper(req, res, next) {
   }
 }
 
+function checkRole(role) {
+  return function (req, res, next) {
+    if (role && role === req.headers.role) {
+      next();
+    } else {
+      res.status(403).json({ message: "can't touch this!" });
+    }
+  }
+}
+
 
 server.use(helmet());
-// server.use(logger());
-// server.use(gateKeeper());
+server.use(logger);
 
 server.use('/api/hubs', hubsRouter);
 
@@ -43,7 +52,7 @@ server.get('/echo', (req, res) => {
   res.send(req.headers);
 })
 
-server.get('/area51', helmet(), gateKeeper, (req, res) => {
+server.get('/area51', helmet(), gateKeeper, checkRole('agent'), (req, res) => {
   res.send(req.headers);
 })
 
